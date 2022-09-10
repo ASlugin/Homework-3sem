@@ -1,6 +1,13 @@
 Number of runs for each test: 10
 
 Size of matrices | Average time (sequental) | Standart deviation(sequental) | Average time (threading) | Standart deviation (threading)
-     100x100     |        0,02522sec        |          0,00135sec           |        0,00964sec        |          0,00149sec           
-     200x200     |        0,19715sec        |          0,00856sec           |        0,06058sec        |          0,02866sec           
-     300x300     |        0,67834sec        |          0,02394sec           |        0,23937sec        |          0,01532sec           
+     100x100     |        0,01074sec        |          0,00020sec           |        0,00479sec        |          0,00036sec           
+     200x200     |        0,08390sec        |          0,00201sec           |        0,02312sec        |          0,00426sec           
+     300x300     |        0,27935sec        |          0,00231sec           |        0,05359sec        |          0,00100sec           
+     400x400     |        0,67061sec        |          0,00637sec           |        0,12975sec        |          0,00363sec           
+     500x500     |        1,32483sec        |          0,01603sec           |        0,24941sec        |          0,00675sec           
+     600x600     |        2,28717sec        |          0,02259sec           |        0,42764sec        |          0,00142sec           
+     700x700     |        3,79958sec        |          0,06915sec           |        0,68407sec        |          0,00784sec           
+     800x800     |        5,82811sec        |          0,16745sec           |        1,06508sec        |          0,05520sec           
+     900x900     |        12,36377sec        |          0,92278sec           |        1,50531sec        |          0,07267sec           
+    1000x1000    |        15,58480sec        |          1,86046sec           |        2,15435sec        |          0,05221sec           

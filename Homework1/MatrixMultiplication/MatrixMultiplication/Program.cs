@@ -2,7 +2,7 @@
 {
     if (args.Length > 0)
     {
-        if (String.Compare(args[0], "1") == 0)
+        if (String.Compare(args[0], "runComparison") == 0)
         {
             Comparison.CompareMethods();
             Console.WriteLine("The result of the comparison is in the file \"ResultOfComparison.txt\"");

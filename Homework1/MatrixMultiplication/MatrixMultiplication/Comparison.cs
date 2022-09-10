@@ -11,7 +11,7 @@ public static class Comparison
     public static void CompareMethods()
     {
         var initialSize = 100;
-        var maxSize = 300;
+        var maxSize = 1000;
         var step = 100;
 
         var numberOfRunsForEachTest = 10;

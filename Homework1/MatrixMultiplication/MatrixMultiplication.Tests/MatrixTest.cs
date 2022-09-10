@@ -1,5 +1,3 @@
-namespace MatrixMultiplication.Tests;
-
 public class Tests
 {
     [TestCase(50, 50, 50, 50)]
@@ -19,7 +17,7 @@ public class Tests
     [TestCase(5, 7, 5, 7)]
     [TestCase(3, 4, 5, 6)]
     [TestCase(10, 3, 10, 10)]
-    public void IfMatricesCannotBaMultipliedMethodsShallThrowException(int rows1, int columns1, int rows2, int columns2)
+    public void IfMatricesCannotBeMultipliedMethodsShallThrowException(int rows1, int columns1, int rows2, int columns2)
     {
         var firstMatrix = Matrix.CreateMatrix(rows1, columns1);
         var secondMatrix = Matrix.CreateMatrix(rows2, columns2);

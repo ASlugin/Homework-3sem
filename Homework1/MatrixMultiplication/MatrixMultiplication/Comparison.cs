@@ -1,11 +1,9 @@
-﻿namespace MatrixMultiplication;
-
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 /// <summary>
 /// Class for comparing matrix multiplication methods
 /// </summary>
-public class Comparison
+public static class Comparison
 {
     /// <summary>
     /// Perfoms comparing matrix multiplication methods
@@ -13,12 +11,14 @@ public class Comparison
     public static void CompareMethods()
     {
         var initialSize = 100;
-        var maxSize = 1000;
+        var maxSize = 300;
         var step = 100;
 
         var numberOfRunsForEachTest = 10;
 
-        using StreamWriter file = new StreamWriter("../../../ResultOfСomparison.txt", false);
+        var stopwatch = new Stopwatch();
+
+        using var file = new StreamWriter("ResultOfСomparison.txt", false);
         file.WriteLine($"Number of runs for each test: {numberOfRunsForEachTest}\n");
         file.WriteLine("Size of matrices | Average time (sequental) | Standart deviation(sequental) | Average time (threading) | Standart deviation (threading)");
         for (int i = initialSize; i <= maxSize; i += step)
@@ -33,7 +33,7 @@ public class Comparison
 
             for (int j = 0; j < numberOfRunsForEachTest; j++)
             {
-                var stopwatch = Stopwatch.StartNew();
+                stopwatch.Restart();
                 var matrix = Matrix.SequentialMultiplication(firstMatrix, secondMatrix);
                 stopwatch.Stop();
                 var timeSequential = stopwatch.Elapsed.TotalSeconds;
@@ -63,7 +63,5 @@ public class Comparison
             file.Write($"        {mathExpectationSequental:f5}sec        |          {standardDeviationSequental:f5}sec           |");
             file.WriteLine($"        {mathExpectationThreading:f5}sec        |          {standardDeviationThreading:f5}sec           ");
         }
-
     }
-
 }

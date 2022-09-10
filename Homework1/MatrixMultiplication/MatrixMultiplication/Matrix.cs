@@ -1,9 +1,4 @@
-﻿namespace MatrixMultiplication;
-
-using System;
-using System.Threading;
-
-/// <summary>
+﻿/// <summary>
 /// Class for matrices and actions on matrices
 /// </summary>
 public class Matrix
@@ -13,24 +8,27 @@ public class Matrix
     /// <summary>
     /// Amount of rows in matrix
     /// </summary>
-    public int Rows { get; private set; }
+    public int Rows 
+    {
+        get { return this.matrix.GetLength(0); } 
+    }
 
     /// <summary>
     /// Amount of columns in matrix
     /// </summary>
-    public int Columns { get; private set; }
-
+    public int Columns
+    {
+        get { return this.matrix.GetLength(1); }
+    }
 
     /// <summary>
-    /// Creates empty matrix with amount rows and columns
+    /// Creates empty matrix
     /// </summary>
-    /// <param name="rows"></param>
-    /// <param name="columns"></param>
+    /// <param name="rows">Amount of rows for new matrix</param>
+    /// <param name="columns">Amount of columns for new matrix</param>
     public Matrix(int rows, int columns)
     {
         this.matrix = new int[rows, columns];
-        Rows = rows;
-        Columns = columns;
     }
 
     /// <summary>
@@ -50,9 +48,7 @@ public class Matrix
             throw new ArgumentException("Number of matrix size arguments is incorrect");
         }
 
-        Rows = Int32.Parse(numbersFromFirstString[0]);
-        Columns = Int32.Parse(numbersFromFirstString[1]);
-        this.matrix = new int[Rows, Columns];
+        this.matrix = new int[Int32.Parse(numbersFromFirstString[0]), Int32.Parse(numbersFromFirstString[1])];
 
         for (int i = 0; i < Rows; i++)
         {
@@ -73,6 +69,8 @@ public class Matrix
         }
     }
 
+    private static Random rand = new();
+
     /// <summary>
     /// Creates new matrix with random values
     /// </summary>
@@ -81,7 +79,6 @@ public class Matrix
     public static Matrix CreateMatrix(int rows, int columns)
     {
         var matrix = new Matrix(rows, columns);
-        var rand = new Random();
         for (int i = 0; i < rows; ++i)
         {
             for (int j = 0; j < columns; ++j)
@@ -104,13 +101,13 @@ public class Matrix
         }
         Matrix resultMatrix = new(firstMatrix.Rows, secondMatrix.Columns);
 
-        for (int i = 0; i < firstMatrix.Rows; ++i)
+        for (int row = 0; row < firstMatrix.Rows; ++row)
         {
-            for (int j = 0; j < secondMatrix.Columns; ++j)
+            for (int column = 0; column < secondMatrix.Columns; ++column)
             {
-                for (int k = 0; k < firstMatrix.Columns; ++k)
+                for (int i = 0; i < firstMatrix.Columns; ++i)
                 {
-                    resultMatrix.matrix[i, j] += firstMatrix.matrix[i, k] * secondMatrix.matrix[k, j];
+                    resultMatrix.matrix[row, column] += firstMatrix.matrix[row, i] * secondMatrix.matrix[i, column];
                 }
             }
         }
@@ -129,7 +126,7 @@ public class Matrix
         }
         Matrix resultMatrix = new(firstMatrix.Rows, secondMatrix.Columns);
 
-        var threads = new Thread[Environment.ProcessorCount];
+        var threads = firstMatrix.Rows < Environment.ProcessorCount ? new Thread[firstMatrix.Rows] : new Thread[Environment.ProcessorCount];
         var chunkSize = firstMatrix.Rows / threads.Length + 1;
 
         for (int i = 0; i < threads.Length; ++i)
@@ -137,13 +134,13 @@ public class Matrix
             var localI = i;
             threads[i] = new Thread(() => 
                 {
-                    for (int j = localI * chunkSize; j < (localI + 1) * chunkSize && j < firstMatrix.Rows; ++j)
+                    for (int row = localI * chunkSize; row < (localI + 1) * chunkSize && row < firstMatrix.Rows; ++row)
                     {
-                        for (int g = 0; g < secondMatrix.Columns; ++g)
+                        for (int column = 0; column < secondMatrix.Columns; ++column)
                         {
                             for (int k = 0; k < firstMatrix.Columns; ++k)
                             {
-                                resultMatrix.matrix[j, g] += firstMatrix.matrix[j, k] * secondMatrix.matrix[k, g];
+                                resultMatrix.matrix[row, column] += firstMatrix.matrix[row, k] * secondMatrix.matrix[k, column];
                             }
                         }
                     }
@@ -167,7 +164,7 @@ public class Matrix
     /// </summary>
     public void WriteMatrixToFile(string pathToResultFile)
     {
-        using StreamWriter file = new StreamWriter(pathToResultFile, false);
+        using StreamWriter file = new(pathToResultFile, false);
         file.WriteLine($"{Rows} {Columns}");
         for (int i = 0; i < Rows; ++i)
         {

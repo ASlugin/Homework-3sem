@@ -1,4 +1,6 @@
-﻿/// <summary>
+﻿namespace MatrixMultiplication;
+
+/// <summary>
 /// Class for matrices and actions on matrices
 /// </summary>
 public class Matrix
@@ -8,18 +10,12 @@ public class Matrix
     /// <summary>
     /// Amount of rows in matrix
     /// </summary>
-    public int Rows 
-    {
-        get { return this.matrix.GetLength(0); } 
-    }
+    public int Rows => this.matrix.GetLength(0);
 
     /// <summary>
     /// Amount of columns in matrix
     /// </summary>
-    public int Columns
-    {
-        get { return this.matrix.GetLength(1); }
-    }
+    public int Columns => this.matrix.GetLength(1);
 
     /// <summary>
     /// Creates empty matrix

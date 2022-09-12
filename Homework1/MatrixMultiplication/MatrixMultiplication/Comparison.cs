@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿namespace MatrixMultiplication;
+
+using System.Diagnostics;
 
 /// <summary>
 /// Class for comparing matrix multiplication methods

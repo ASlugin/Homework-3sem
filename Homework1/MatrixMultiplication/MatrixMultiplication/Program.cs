@@ -1,4 +1,6 @@
-﻿try
+﻿using MatrixMultiplication;
+
+try
 {
     if (args.Length > 0)
     {

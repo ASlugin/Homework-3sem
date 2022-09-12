@@ -1,3 +1,4 @@
+namespace MatrixMultiplication.Tests;
 public class Tests
 {
     [TestCase(50, 50, 50, 50)]

@@ -3,6 +3,9 @@
 using System.Net;
 using System.Net.Sockets;
 
+/// <summary>
+/// Class for server
+/// </summary>
 public class Server
 {
     private TcpListener listener;
@@ -19,6 +22,9 @@ public class Server
         this.requests = new();
     }
 
+    /// <summary>
+    /// Starts server
+    /// </summary>
     public async void Start()
     {
         listener.Start();
@@ -35,7 +41,7 @@ public class Server
                 var request = (await reader.ReadLineAsync())?.Split(' ');
                 if (request is null)
                 {
-                    throw new Exception();  ////
+                    throw new ArgumentException("Request to server cannot be null");
                 }
                 if (String.Compare(request[0], "1") == 0)
                 {
@@ -53,6 +59,9 @@ public class Server
         listener.Stop();
     }
 
+    /// <summary>
+    /// Stops server
+    /// </summary>
     public void Stop()
     {
         tokenSource.Cancel();

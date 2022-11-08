@@ -3,6 +3,9 @@
 using System.Net;
 using System.Net.Sockets;
 
+/// <summary>
+/// Class for client
+/// </summary>
 public class Client
 {
     private IPAddress ip;
@@ -14,6 +17,10 @@ public class Client
         this.port = port;
     }
 
+    /// <summary>
+    /// Returns list of files and directories in given path
+    /// </summary>
+    /// <returns>String where amount of file and directories and list of them</returns>
     public async Task<string> List(string path)
     {
         using (var client = new TcpClient())
@@ -27,18 +34,19 @@ public class Client
 
             var reader = new StreamReader(stream);
             var response = await reader.ReadLineAsync();
-            if (response is null)
+            if (String.Compare(response!.Split(' ')[0], "-1") == 0)
             {
-                throw new Exception(); ////////
-            }
-            if (String.Compare(response.Split(' ')[0], "-1") == 0)
-            {
-                throw new DirectoryNotFoundException(); //////
+                throw new DirectoryNotFoundException();
             }
             return response;
         }
     }
 
+    /// <summary>
+    /// Returns data about file
+    /// </summary>
+    /// <param name="path">Path where file is located</param>
+    /// <returns>String with length of file and array of bytes of file</returns>
     public async Task<string> Get(string path)
     {
         using (var client = new TcpClient())
@@ -52,18 +60,18 @@ public class Client
 
             var reader = new StreamReader(stream); 
             var response = await reader.ReadLineAsync();
-            if (response is null)
+            if (String.Compare(response!.Split(' ')[0], "-1") == 0)
             {
-                throw new Exception(); ////////
-            }
-            if (String.Compare(response.Split(' ')[0], "-1") == 0)
-            {
-                throw new FileNotFoundException(); //////
+                throw new FileNotFoundException();
             }
             return response;
         }
     }
 
+    /// <summary>
+    /// Method for work with client from console
+    /// </summary>
+    /// <param name="request">Command for client, what is requested from server</param>
     public async void Execute(string request)
     {
         var command = request.Split(' ', StringSplitOptions.RemoveEmptyEntries);

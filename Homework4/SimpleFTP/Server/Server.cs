@@ -13,13 +13,13 @@ public class Server
 
     public Server(IPAddress ip, int port)
     {
-        this.listener = new(IPAddress.Parse("127.0.0.1"), port);
+        this.listener = new(ip, port);
         this.port = port;
         this.tokenSource = new();
         this.requests = new();
     }
 
-    public async Task Start()
+    public async void Start()
     {
         listener.Start();
         Console.WriteLine($"Server started on port {port}...");
@@ -85,12 +85,20 @@ public class Server
 
     private async Task Get(string path, StreamWriter writer)
     {
-        if (!Directory.Exists(path))
+        if (!File.Exists(path))
         {
             await writer.WriteLineAsync("-1");
             await writer.FlushAsync();
             return;
         }
-    }
 
+        await writer.WriteAsync($"{new FileInfo(path).Length} ");
+        var file = await File.ReadAllBytesAsync(path, tokenSource.Token);
+        foreach (var oneByte in file)
+        {
+            await writer.WriteAsync(oneByte.ToString());
+        }
+        await writer.WriteLineAsync();
+        await writer.FlushAsync();
+    }
 }

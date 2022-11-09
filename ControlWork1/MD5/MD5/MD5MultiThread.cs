@@ -34,8 +34,7 @@ public static class MD5MultiThread
         }
         using var md5 = MD5.Create();
         var arrayToComputeHash = await ByteArrayFromDirectoryRecursive(path);
-        return arrayToComputeHash;
-        //return await md5.ComputeHashAsync(new Stream(), new CancellationToken());
+        return await md5.ComputeHashAsync(new MemoryStream(arrayToComputeHash), new CancellationToken());
     }
 
     private static async Task<byte[]> ByteArrayFromDirectoryRecursive(string path)
@@ -49,9 +48,8 @@ public static class MD5MultiThread
         var files = Directory.GetFiles(path);
         foreach (var file in files)
         {
-            arrayToComputeHash = arrayToComputeHash.Concat<byte>(await File.ReadAllBytesAsync(file)).ToArray();
+            arrayToComputeHash = arrayToComputeHash.Concat<byte>(await File.ReadAllBytesAsync(file, new CancellationToken())).ToArray();
         }
         return arrayToComputeHash;
     }
-
 }

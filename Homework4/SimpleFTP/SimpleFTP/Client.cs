@@ -1,5 +1,6 @@
 ﻿namespace ClientProgram;
 
+using System.Buffers.Text;
 using System.Net;
 using System.Net.Sockets;
 
@@ -8,6 +9,7 @@ using System.Net.Sockets;
 /// </summary>
 public class Client
 {
+    private string directoryToDownloadFile = "../../../../Download/";
     private IPAddress ip;
     private int port;
 
@@ -64,6 +66,14 @@ public class Client
             {
                 throw new FileNotFoundException();
             }
+
+            var pathSplitBySlash = path.Split('/');
+            var pathSplitByBackSlash = pathSplitBySlash[pathSplitBySlash.Length -1].Split('\\');
+            var fileName = pathSplitByBackSlash[pathSplitByBackSlash.Length - 1];
+
+            var bytesForFile = Convert.FromBase64String(response.Split(' ')[1]);
+            await File.WriteAllBytesAsync(String.Concat(directoryToDownloadFile, fileName), bytesForFile);
+            
             return response;
         }
     }
@@ -82,13 +92,27 @@ public class Client
         }
         if (String.Compare(command[0], "1") == 0)
         {
-            var result = await List(command[1]);
-            Console.WriteLine(result);
+            try
+            {
+                var result = await List(command[1]);
+                Console.WriteLine(result);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                Console.WriteLine("Such directory doesn't exist");
+            }
         }
         else if (String.Compare(command[0], "2") == 0)
         {
-            var result = await Get(command[1]);
-            Console.WriteLine(result);
+            try
+            {
+                var result = await Get(command[1]);
+                Console.WriteLine("File is downoloaded");
+            }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine("Such file doesn't exist");
+            }
         }
         else
         {

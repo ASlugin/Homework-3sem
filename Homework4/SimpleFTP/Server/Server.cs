@@ -103,10 +103,7 @@ public class Server
 
         await writer.WriteAsync($"{new FileInfo(path).Length} ");
         var file = await File.ReadAllBytesAsync(path, tokenSource.Token);
-        foreach (var oneByte in file)
-        {
-            await writer.WriteAsync(oneByte.ToString());
-        }
+        await writer.WriteAsync(Convert.ToBase64String(file));
         await writer.WriteLineAsync();
         await writer.FlushAsync();
     }

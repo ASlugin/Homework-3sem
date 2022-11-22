@@ -3,6 +3,7 @@ namespace SimpleFTPTests;
 using ServerProgram;
 using ClientProgram;
 using System.Net;
+using System.IO;
 
 public class Tests
 {
@@ -59,13 +60,20 @@ public class Tests
     public async Task GetShallWorkCorrectly()
     {
         const string path = "../../../TestDirectory/Directory/Test2.txt";
-        var file = File.ReadAllBytes(path);
-        string expectedResult = $"{file.Length} ";
-        foreach (var item in file)
-        {
-            expectedResult = String.Concat(expectedResult, ((byte)item).ToString());
-        }
+        var file = await File.ReadAllBytesAsync(path);
+        string expectedResult = $"{file.Length} {Convert.ToBase64String(file)}";
         var result = await client.Get(path);
         Assert.That(result, Is.EqualTo(expectedResult));
+    }
+
+    [Test]
+    public async Task GivenFileAndDownoloadedFileShallBeEqual()
+    {
+        const string pathFile = "../../../TestDirectory/Test.txt";
+        const string pathDownloadedFile = "../../../../Download/Test.txt";
+        await client.Get(pathFile);
+        var file = File.ReadAllBytes(pathFile);
+        var downloadedFile = File.ReadAllBytes(pathDownloadedFile);
+        Assert.That(downloadedFile, Is.EqualTo(file));
     }
 }

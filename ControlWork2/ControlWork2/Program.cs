@@ -1,7 +1,6 @@
 ﻿namespace ControlWork2;
 
 using System.Net;
-using System.Threading;
 
 public class Program
 {

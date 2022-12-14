@@ -1,56 +1,89 @@
 ﻿namespace ControlWork2;
 
 using System.Net;
+using System.IO;
 using System.Net.Sockets;
 
+/// <summary>
+/// Class for server for chat
+/// </summary>
 public class Server
 {
     private int port;
+    private TcpListener listener;
+
+    private CancellationTokenSource tokenSource; 
     
     public Server (int port)
     {
         this.port = port;
+        this.listener = new TcpListener(IPAddress.Any, port);
+        this.tokenSource = new CancellationTokenSource();
     }
 
+    /// <summary>
+    /// Starts server
+    /// </summary>
+    /// <returns></returns>
     public async Task Start()
     {
-        var listener = new TcpListener(IPAddress.Any, port);
         listener.Start();
-        Console.WriteLine($"Server started on port {port}...");
-        
-        var socket = await listener.AcceptSocketAsync();
-        Console.WriteLine("Соединение с клиентом установлено");
+        Console.WriteLine($"Server is started on port {port}...");
 
-        var stream = new NetworkStream(socket);
-        var reader = new StreamReader(stream);
-        var writer = new StreamWriter(stream);
-        while (true)
-        { 
-            await Task.Run(async () =>
-            {
-                while (true)
-                {
-                    var data = await reader.ReadLineAsync();
-                    if (data != null)
-                    {
-                        Console.WriteLine(data);
-                    }
-                }
-            });
-
-            await Task.Run(async () =>
-            {
-                while (true)
-                {
-                    var message = Console.ReadLine();
-                    await writer.WriteLineAsync(message);
-                    await writer.FlushAsync();
-                }
-            });
+        while (!tokenSource.Token.IsCancellationRequested)
+        {
+            var client = await listener.AcceptTcpClientAsync();
+            var stream = client.GetStream();
+            Console.WriteLine("Connection with client is established");
+            
+            Writer(stream);
+            Reader(stream);
         }
-        socket.Close();
-        Console.WriteLine("Соединение с клиентом прервано");
 
+        listener.Stop();
+        Console.WriteLine("Server is stopped");
     }
 
+    private void Writer(NetworkStream stream)
+    {
+        Task.Run(async () =>
+        {
+            var writer = new StreamWriter(stream);
+            writer.AutoFlush = true;
+            while (!tokenSource.Token.IsCancellationRequested)
+            {
+                var message = Console.ReadLine();
+                await writer.WriteLineAsync(message);
+                if (String.Compare(message, "exit") == 0)
+                {
+                    tokenSource.Cancel();
+                }
+            }
+            writer.Close();
+        });
+    }
+
+    private void Reader(NetworkStream stream)
+    {
+        Task.Run(async () =>
+        {
+            var reader = new StreamReader(stream);
+            while (!tokenSource.Token.IsCancellationRequested)
+            {
+                try
+                {
+                    var data = await reader.ReadLineAsync(tokenSource.Token);
+                    Console.WriteLine($"Client: {data}");
+                    if (String.Compare(data, "exit") == 0)
+                    {
+                        tokenSource.Cancel();
+                    }                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
+            reader.Close();
+        });
+    }
 }

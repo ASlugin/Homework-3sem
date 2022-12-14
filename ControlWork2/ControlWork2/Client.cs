@@ -2,53 +2,93 @@
 
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
+/// <summary>
+/// Class for client for chat
+/// </summary>
 public class Client
 {
     private IPAddress ip;
     private int port;
 
+    private CancellationTokenSource tokenSource;
+
+    private List<Task> tasks;
+
     public Client(IPAddress ip, int port)
     {
         this.ip = ip;
         this.port = port;
+        this.tokenSource = new CancellationTokenSource();
+        this.tasks = new();
     }
 
+    /// <summary>
+    /// Starts client
+    /// </summary>
+    /// <returns></returns>
     public async Task Start()
     {
         using (var client = new TcpClient())
         {
-            client.Connect(ip, port);
+            await client.ConnectAsync(ip, port);
             var stream = client.GetStream();
-            Console.WriteLine("Соединение установлено");
+            Console.WriteLine("Connection with server is established");
 
-            var writer = new StreamWriter(stream);
-            var reader = new StreamReader(stream);
+            Writer(stream);
+            Reader(stream);
 
-            while (true)
-            {
-                /*
-                await Task.Run(async () =>
-                {
-                    var reader = new StreamReader(stream);
-
-                    var data = await reader.ReadLineAsync();
-                    Console.WriteLine(data);
-                });*/
-
-                await Task.Run(async () =>
-                {
-                    while (true)
-                    {
-                        var message = Console.ReadLine();
-                        await writer.WriteLineAsync(message);
-                        await writer.FlushAsync();
-                    }
-                });
-            }
+            await Task.WhenAll(tasks);
+            client.Close();
+            Console.WriteLine("Client is stopped");
         }
-
-        Console.WriteLine("Client stopped");
     }
 
+    private void Writer(NetworkStream stream)
+    {
+        tasks.Add(Task.Run(async () =>
+            {
+                var writer = new StreamWriter(stream);
+                writer.AutoFlush = true;
+                while (!tokenSource.Token.IsCancellationRequested)
+                {
+                    var message = Console.ReadLine();
+                    await writer.WriteLineAsync(message);
+                    if (String.Compare(message, "exit") == 0)
+                    {
+                        tokenSource.Cancel();
+                    }
+                }
+
+                writer.Close();
+            })
+        );
+    }
+
+    private void Reader(NetworkStream stream)
+    {
+        tasks.Add(Task.Run(async () =>
+            {
+                var reader = new StreamReader(stream);
+                while (!tokenSource.Token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        var data = await reader.ReadLineAsync(tokenSource.Token);
+                        Console.WriteLine($"Server: {data}");
+                        if (String.Compare(data, "exit") == 0)
+                        {
+                            tokenSource.Cancel();
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                }
+                reader.Close();
+            })
+        );
+    }
 }

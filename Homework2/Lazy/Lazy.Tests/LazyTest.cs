@@ -1,33 +1,25 @@
 namespace LazyTest;
 
 using Lazy;
+using Newtonsoft.Json.Linq;
 
 public class Tests
 {
-    [Test]
-    public void GetReturnsSameValueForAnyCall()
+    private static IEnumerable<TestCaseData> Lazies()
     {
-        var value = 7;
-        var lazy = new SingleThreadedLazy<int>(() => value);
-        var lazyMultithreded = new MultiThreadedLazy<int>(() => value);
-
-        for (var i = 0; i < 5; ++i)
-        {
-            Assert.That(value, Is.EqualTo(lazy.Get()));
-            Assert.That(value, Is.EqualTo(lazyMultithreded.Get()));
-        }
+        int value = 7;
+        int valueThreaded = 7;
+        yield return new TestCaseData(new SingleThreadedLazy<int>(() => value++));
+        yield return new TestCaseData(new MultiThreadedLazy<int>(() => Interlocked.Increment(ref valueThreaded)));
     }
 
-    [Test]
-    public void GetReturnsSameObjectForAnyCall()
+    [TestCaseSource(nameof(Lazies))]
+    public void GetShallNotChangeValue<T>(ILazy<T> Lazy)
     {
-        var testString = "Hello World!";
-        var lazy = new SingleThreadedLazy<string>(() => testString);
-        var lazyMultithreded = new MultiThreadedLazy<string>(() => testString);
-        for (var i = 0; i < 5; ++i)
+        var result = Lazy.Get();
+        for (var i = 0; i < 10; ++i)
         {
-            Assert.That(testString, Is.SameAs(lazy.Get()));
-            Assert.That(testString, Is.SameAs(lazyMultithreded.Get()));
+            Assert.That(result, Is.EqualTo(Lazy.Get()));
         }
     }
 

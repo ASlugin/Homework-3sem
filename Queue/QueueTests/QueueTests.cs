@@ -47,6 +47,6 @@ public class Tests
             thread.Join();
         }
 
-        Assert.That(queue.Size, Is.EqualTo(Environment.ProcessorCount * 10));
+        Assert.That(queue.Size(), Is.EqualTo(Environment.ProcessorCount * 10));
     }
 }

@@ -6,17 +6,18 @@
 public class QueueWithPriority<T>
 {
     private List<(T value, int priority)> list;
-
-    /// <summary>
-    /// Amount of elements in queue
-    /// </summary>
-    public int Size { private set; get; }
+    private int size = 0;
 
     public QueueWithPriority()
     {
         this.list = new();
-        this.Size = 0;
     }
+
+    /// <summary>
+    /// Returns amount of elements in queue
+    /// </summary>
+    public int Size()
+        => size;
 
     /// <summary>
     /// Adds element to queue according to priority
@@ -32,7 +33,7 @@ public class QueueWithPriority<T>
                 index++;
             }
             list.Insert(index, (value, priority));
-            Size++;
+            size++;
             Monitor.PulseAll(list);
         }
     }
@@ -45,14 +46,14 @@ public class QueueWithPriority<T>
         T result;
         lock (list)
         {
-            while (Size == 0)
+            while (list.Count == 0)
             {
                 Monitor.Wait(list);
             }
 
             result = list[0].value;
             list.RemoveAt(0);
-            Size--;
+            size--;
         }
         return result;
     }

@@ -35,6 +35,7 @@ public class Tests
                 {
                     queue.Enqueue(j, j);
                 }
+                queue.Enqueue(localI, 100 + localI);
             });
         }
         
@@ -47,6 +48,7 @@ public class Tests
             thread.Join();
         }
 
-        Assert.That(queue.Size(), Is.EqualTo(Environment.ProcessorCount * 10));
+        Assert.That(queue.Size(), Is.EqualTo(Environment.ProcessorCount * 10 + threads.Length));
+        Assert.That(queue.Dequeue(), Is.EqualTo(threads.Length - 1));
     }
 }

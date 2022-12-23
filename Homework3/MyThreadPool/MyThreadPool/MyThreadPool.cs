@@ -1,6 +1,7 @@
 ﻿namespace MyThreadPool;
 
 using System.Collections.Concurrent;
+using System.Threading;
 
 /// <summary>
 /// Class for thread pool
@@ -41,6 +42,11 @@ public class MyThreadPool : IDisposable
                 }
 
                 threadPoolEvent.WaitOne();
+
+                if (!tasks.IsEmpty || cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    threadPoolEvent.Set();
+                }
 
                 if (tasks.TryDequeue(out Action? task))
                 {

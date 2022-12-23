@@ -1,6 +1,6 @@
-﻿using System.Threading;
+﻿namespace Lazy;
 
-namespace Lazy;
+using System.Threading;
 
 /// <summary>
 /// Realizes lazy evaluation in multithreaded mode

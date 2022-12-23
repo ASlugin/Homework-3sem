@@ -1,7 +1,6 @@
 namespace LazyTest;
 
 using Lazy;
-using Newtonsoft.Json.Linq;
 
 public class Tests
 {

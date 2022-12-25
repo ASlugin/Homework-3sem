@@ -6,7 +6,7 @@
 public class QueueWithPriority<T>
 {
     private List<(T value, int priority)> list;
-    private int size = 0;
+    private volatile int size = 0;
 
     public QueueWithPriority()
     {
@@ -46,7 +46,7 @@ public class QueueWithPriority<T>
         T result;
         lock (list)
         {
-            while (list.Count == 0)
+            while (size == 0)
             {
                 Monitor.Wait(list);
             }

@@ -1,6 +1,7 @@
+using System.Collections;
+
 namespace QueueTests;
 using Queue;
-using System.Collections.Generic;
 
 public class Tests
 {
@@ -38,7 +39,7 @@ public class Tests
                 queue.Enqueue(localI, 100 + localI);
             });
         }
-        
+
         foreach (var thread in threads)
         {
             thread.Start();

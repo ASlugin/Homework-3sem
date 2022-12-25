@@ -27,22 +27,20 @@ public class Client
     /// <summary>
     /// Starts client
     /// </summary>
-    /// <returns></returns>
     public async Task Start()
     {
-        using (var client = new TcpClient())
-        {
-            await client.ConnectAsync(ip, port);
-            var stream = client.GetStream();
-            Console.WriteLine("Connection with server is established");
+        using var client = new TcpClient();
 
-            Writer(stream);
-            Reader(stream);
+        await client.ConnectAsync(ip, port);
+        var stream = client.GetStream();
+        Console.WriteLine("Connection with server is established");
 
-            await Task.WhenAll(tasks);
-            client.Close();
-            Console.WriteLine("Client is stopped");
-        }
+        Writer(stream);
+        Reader(stream);
+
+        await Task.WhenAll(tasks);
+        client.Close();
+        Console.WriteLine("Client is stopped");
     }
 
     private void Writer(NetworkStream stream)

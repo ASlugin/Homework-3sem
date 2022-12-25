@@ -77,7 +77,8 @@ public class Server
                     if (String.Compare(data, "exit") == 0)
                     {
                         tokenSource.Cancel();
-                    }                }
+                    }
+                }
                 catch (OperationCanceledException)
                 {
                     break;

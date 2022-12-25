@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace MyThreadPool;
+﻿namespace MyThreadPool;
 
 /// <summary>
 /// Interface for task that will be returned by thread pool

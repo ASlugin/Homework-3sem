@@ -84,6 +84,7 @@ public class MyThreadPool : IDisposable
     {
         cancellationTokenSource.Cancel();
 
+        threadPoolEvent.Set();
         for (int i = 0; i < threads.Length; i++)
         {
             threads[i].Join();

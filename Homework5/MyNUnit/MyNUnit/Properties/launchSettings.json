@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "MyNUnit": {
+      "commandName": "Project",
+      "commandLineArgs": "./TestProject/bin/",
+      "workingDirectory": "C:\\Users\\Alexander\\source\\repos\\Homework-3sem\\Homework5\\MyNUnit"
+    }
+  }
+}

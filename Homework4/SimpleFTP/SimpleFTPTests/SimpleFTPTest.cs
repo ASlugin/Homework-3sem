@@ -104,7 +104,7 @@ public class Tests
                 string path = $"../../../TestDirectory/Directory/Test{localI}.txt";
                 var result = await client.Get(path);
             }));
-        }
+        } 
         await Task.WhenAll(taskList);
 
         for (int i = 1; i <= taskList.Count; i++)

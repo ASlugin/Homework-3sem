@@ -25,13 +25,13 @@ public class Server
     /// <summary>
     /// Starts server
     /// </summary>
-    public async void Start()
+    public async Task Start()
     {
         listener.Start();
         Console.WriteLine($"Server started on port {port}...");
         while (!tokenSource.IsCancellationRequested)
         {
-            var socket = await listener.AcceptSocketAsync();
+            var socket = await listener.AcceptSocketAsync(tokenSource.Token);
             requests.Add(Task.Run(async () =>
             {
                 var stream = new NetworkStream(socket);
@@ -39,8 +39,10 @@ public class Server
                 var writer = new StreamWriter(stream);
 
                 var request = (await reader.ReadLineAsync())?.Split(' ');
+                Console.WriteLine(request);
                 if (request is null)
                 {
+                    socket.Close();
                     throw new ArgumentException("Request to server cannot be null");
                 }
                 if (String.Compare(request[0], "1") == 0)
@@ -82,11 +84,11 @@ public class Server
         var result = (files.Length + directories.Length).ToString();
         foreach (var file in files)
         {
-            result = String.Concat(result, " ", file, " false");
+            result = $"{result} {file} false";
         }
         foreach (var directory in directories)
         {
-            result = String.Concat(result, " ", directory, " true");
+            result = $"{result} {directory} true";
         }
         await writer.WriteLineAsync(result);
         await writer.FlushAsync();
@@ -102,6 +104,7 @@ public class Server
         }
 
         await writer.WriteAsync($"{new FileInfo(path).Length} ");
+
         var file = await File.ReadAllBytesAsync(path, tokenSource.Token);
         await writer.WriteAsync(Convert.ToBase64String(file));
         await writer.WriteLineAsync();

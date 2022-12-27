@@ -19,9 +19,19 @@ public class Tests
     }
 
     [OneTimeTearDown]
-    public void TearDown()
+    public void TearDownAfterAllTests()
     {
         server.Stop();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        var directoryForRemoveAllFiles = new DirectoryInfo("../../../../Download/");
+        foreach (var file in directoryForRemoveAllFiles.GetFiles())
+        {
+            file.Delete();
+        }
     }
 
     [Test]
@@ -29,7 +39,7 @@ public class Tests
     {
         const string path = "../../../TestDirectory";
         var result = await client.List(path);
-        Assert.IsTrue(String.Compare(result, $"2 {path}\\Test.txt false {path}\\Directory true") == 0);
+        Assert.That(result, Is.EqualTo($"2 {path}\\Test.txt false {path}\\Directory true"));
     }
 
     [Test]
@@ -37,7 +47,7 @@ public class Tests
     {
         const string path = "../../../TestDirectory/Directory";
         var result = await client.List(path);
-        Assert.IsTrue(String.Compare(result, $"1 {path}\\Test2.txt false") == 0);
+        Assert.That(result, Is.EqualTo($"2 {path}\\Test1.txt false {path}\\Test2.txt false"));
     }
 
     [Test]
@@ -67,7 +77,7 @@ public class Tests
     }
 
     [Test]
-    public async Task GivenFileAndDownoloadedFileShallBeEqual()
+    public async Task GivenFileAndDownloadedFileShallBeEqual()
     {
         const string pathFile = "../../../TestDirectory/Test.txt";
         const string pathDownloadedFile = "../../../../Download/Test.txt";
@@ -75,5 +85,36 @@ public class Tests
         var file = File.ReadAllBytes(pathFile);
         var downloadedFile = File.ReadAllBytes(pathDownloadedFile);
         Assert.That(downloadedFile, Is.EqualTo(file));
+    }
+    
+    [Test]
+    public async Task SeveralClientShallWorkWithServerCorrecltly()
+    {
+        var client1 = new Client(IPAddress.Parse(ip), port);
+        var client2 = new Client(IPAddress.Parse(ip), port);
+
+        var clientList = new List<Client>() { client1, client2 };
+
+        var taskList = new List<Task>();
+        for (int i = 1; i <= clientList.Count; i++)
+        {
+            var localI = i;
+            taskList.Add(Task.Run(async () =>
+            {
+                string path = $"../../../TestDirectory/Directory/Test{localI}.txt";
+                var result = await client.Get(path);
+            }));
+        }
+        await Task.WhenAll(taskList);
+
+        for (int i = 1; i <= taskList.Count; i++)
+        {
+            string pathFile = $"../../../TestDirectory/Directory/Test{i}.txt";
+            string pathDownloadedFile = $"../../../../Download/Test{i}.txt";
+            await client.Get(pathFile);
+            var file = File.ReadAllBytes(pathFile);
+            var downloadedFile = File.ReadAllBytes(pathDownloadedFile);
+            Assert.That(downloadedFile, Is.EqualTo(file));
+        }
     }
 }

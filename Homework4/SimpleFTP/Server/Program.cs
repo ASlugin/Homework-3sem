@@ -1,23 +1,31 @@
 ﻿using ServerProgram;
-
 using System.Net;
-using System.Threading;
 
-internal class Program
+if (args.Length != 2)
 {
-    private static void Main(string[] args)
-    {
-        Server server = new(IPAddress.Parse("127.0.0.1"), 8888);
-        server.Start();
-        Console.WriteLine("Enter 'stop' to stop server");
+    Console.WriteLine("Need to give IP adress and port");
+    return;
+}
+if (!IPAddress.TryParse(args[0], out IPAddress? ip))
+{
+    Console.WriteLine("IPAdress is incorrect");
+    return;
+}
+if (!Int32.TryParse(args[1], out int port) && port <= 65535 && port >= 0)
+{
+    Console.WriteLine("Port is incorrect");
+    return;
+}
 
-        while (true)
-        {
-            if (String.Compare(Console.ReadLine(), "stop") == 0)
-            {
-                server.Stop();
-                break;
-            }
-        }
+Server server = new(ip, port);
+await server.Start();
+Console.WriteLine("Enter 'stop' to stop server");
+
+while (true)
+{
+    if (String.Compare(Console.ReadLine(), "stop") == 0)
+    {
+        server.Stop();
+        break;
     }
 }

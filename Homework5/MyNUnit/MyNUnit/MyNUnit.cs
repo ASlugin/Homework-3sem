@@ -145,7 +145,7 @@ public class MyNUnit
 
     private TestInfo RunTest(MethodInfo methodForTest, Object? Instance)
     {
-        var attribute = (TestAttribute) methodForTest.GetCustomAttribute(typeof(TestAttribute))!;
+        var attribute = (TestAttribute)methodForTest.GetCustomAttribute(typeof(TestAttribute))!;
         if (attribute.Ignore is not null)
         {
             return new TestInfo(methodForTest.Name, TestInfo.TestState.Ignored, TimeSpan.Zero, attribute.Ignore);
@@ -185,6 +185,10 @@ public class MyNUnit
         {
             foreach (var attribute in Attribute.GetCustomAttributes(method))
             {
+                if (method.GetParameters().Length != 0 || method.ReturnType != typeof(void))
+                {
+                    throw new InvalidOperationException();
+                }
                 switch (attribute)
                 {
                     case BeforeAttribute:
@@ -208,6 +212,7 @@ public class MyNUnit
                         methodList.AfterClass.Add(method);
                         break;
                     case TestAttribute:
+                        
                         methodList.Test.Add(method);
                         break;
                 }

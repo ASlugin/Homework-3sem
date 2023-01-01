@@ -18,6 +18,10 @@ public class MyThreadPool : IDisposable
 
     public MyThreadPool(int amountOfThreads)
     {
+        if (amountOfThreads < 0)
+        {
+            throw new ArgumentException("Amount of threads should be positive");
+        }
         this.tasks = new();
         this.cancellationTokenSource = new();
         this.threadPoolEvent = new AutoResetEvent(false);
@@ -61,20 +65,22 @@ public class MyThreadPool : IDisposable
     /// <summary>
     /// Adds task to queue for calculating in thread pool
     /// </summary>
-    /// <returns></returns>
     public IMyTask<T> Submit<T>(Func<T> task)
     {
-        if (cancellationTokenSource.Token.IsCancellationRequested)
+        lock (cancellationTokenSource)
         {
-            throw new InvalidOperationException();
+            if (cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                throw new InvalidOperationException();
+            }
+
+            var newTask = new MyTask<T>(task, this);
+            tasks.Enqueue(newTask.Run);
+            Interlocked.Increment(ref tasksCount);
+            threadPoolEvent.Set();
+
+            return newTask;
         }
-
-        var newTask = new MyTask<T>(task, this);
-        tasks.Enqueue(newTask.Run);
-        Interlocked.Increment(ref tasksCount);
-        threadPoolEvent.Set();
-
-        return newTask;
     }
 
     /// <summary>
@@ -82,7 +88,10 @@ public class MyThreadPool : IDisposable
     /// </summary>
     public void Shutdown()
     {
-        cancellationTokenSource.Cancel();
+        lock (cancellationTokenSource)
+        {
+            cancellationTokenSource.Cancel();
+        }
 
         threadPoolEvent.Set();
         for (int i = 0; i < threads.Length; i++)
@@ -102,7 +111,7 @@ public class MyThreadPool : IDisposable
     private class MyTask<T> : IMyTask<T>
     {
         private T? result;
-        private bool isCompleted;
+        private volatile bool isCompleted;
 
         private ManualResetEvent resultIsReceived;
 
@@ -156,7 +165,6 @@ public class MyThreadPool : IDisposable
             {
                 exception = new AggregateException(exc);
             }
-            
 
             task = null;
             isCompleted = true;
@@ -174,29 +182,32 @@ public class MyThreadPool : IDisposable
 
         public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<T, TNewResult> continueTask)
         {
-            if (threadPool.cancellationTokenSource.Token.IsCancellationRequested)
+            lock (threadPool.cancellationTokenSource)
             {
-                throw new InvalidOperationException();
-            }
-
-            Func<TNewResult> continueTaskForThreadPool = () =>
-            {
-                if (exception != null)
+                if (threadPool.cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    throw exception;
+                    throw new InvalidOperationException();
                 }
-                return continueTask(result!);
-            };
 
-            if (isCompleted)
-            {
-                return threadPool.Submit(continueTaskForThreadPool);
+                Func<TNewResult> continueTaskForThreadPool = () =>
+                {
+                    if (exception != null)
+                    {
+                        throw exception;
+                    }
+                    return continueTask(result!);
+                };
+
+                if (isCompleted)
+                {
+                    return threadPool.Submit(continueTaskForThreadPool);
+                }
+
+                var newContinueTask = new MyTask<TNewResult>(continueTaskForThreadPool, threadPool);
+                continueTasks.Enqueue(newContinueTask.Run);
+                Interlocked.Increment(ref threadPool.tasksCount);
+                return newContinueTask;
             }
-
-            var newContinueTask = new MyTask<TNewResult>(continueTaskForThreadPool, threadPool);
-            continueTasks.Enqueue(newContinueTask.Run);
-            Interlocked.Increment(ref threadPool.tasksCount);
-            return newContinueTask;
         }
     }
 }

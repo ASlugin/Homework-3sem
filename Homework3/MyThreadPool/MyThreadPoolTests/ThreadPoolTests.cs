@@ -63,7 +63,7 @@ public class Tests
     }
 
     [Test]
-    public void ThreadPoolShallCalculateContunieCorrectly()
+    public void ThreadPoolShallCalculateContinueCorrectly()
     {
         var continueTasks = new IMyTask<string>[amountOfTasks];
         for (int i = 0; i < amountOfTasks; ++i)

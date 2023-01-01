@@ -49,36 +49,28 @@ public class Client
     /// <param name="path">Path where file is located</param>
     public async Task<string> Get(string path)
     {
-        using (var client = new TcpClient())
+        using var client = new TcpClient();
+        await client.ConnectAsync(ip, port);
+        var stream = client.GetStream();
+
+        var writer = new StreamWriter(stream);
+        await writer.WriteLineAsync(String.Concat("2 ", path));
+        await writer.FlushAsync();
+
+        var reader = new StreamReader(stream); 
+        var response = await reader.ReadLineAsync();
+        if (String.Compare(response!.Split(' ')[0], "-1") == 0)
         {
-            await client.ConnectAsync(ip, port);
-            var stream = client.GetStream();
-
-            var writer = new StreamWriter(stream);
-            await writer.WriteLineAsync(String.Concat("2 ", path));
-            await writer.FlushAsync();
-
-            var reader = new StreamReader(stream); 
-            var response = await reader.ReadLineAsync();
-            if (String.Compare(response!.Split(' ')[0], "-1") == 0)
-            {
-                throw new FileNotFoundException();
-            }
-
-            var pathSplitBySlash = path.Split('/');
-            var pathSplitByBackSlash = pathSplitBySlash[pathSplitBySlash.Length -1].Split('\\');
-            var fileName = pathSplitByBackSlash[pathSplitByBackSlash.Length - 1];
-
-            /*
-            Console.WriteLine(fileName);
-            var fileStream = File.Create(String.Concat(directoryToDownloadFile, fileName));
-            await reader.BaseStream.CopyToAsync(fileStream);
-            fileStream.Close();*/
-            
-            var bytesForFile = Convert.FromBase64String(response.Split(' ')[1]);
-            await File.WriteAllBytesAsync(String.Concat(directoryToDownloadFile, fileName), bytesForFile);
-            
-            return response;
+            throw new FileNotFoundException();
         }
+
+        var pathSplitBySlash = path.Split('/');
+        var pathSplitByBackSlash = pathSplitBySlash[pathSplitBySlash.Length -1].Split('\\');
+        var fileName = pathSplitByBackSlash[pathSplitByBackSlash.Length - 1];
+
+        var bytesForFile = Convert.FromBase64String(response.Split(' ')[1]);
+        await File.WriteAllBytesAsync(String.Concat(directoryToDownloadFile, fileName), bytesForFile);
+            
+        return response;
     }
 }

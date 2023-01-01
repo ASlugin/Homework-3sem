@@ -34,27 +34,30 @@ public class Server
             var socket = await listener.AcceptSocketAsync(tokenSource.Token);
             requests.Add(Task.Run(async () =>
             {
-                var stream = new NetworkStream(socket);
-                var reader = new StreamReader(stream);
-                var writer = new StreamWriter(stream);
-
-                var request = (await reader.ReadLineAsync())?.Split(' ');
-                Console.WriteLine(request);
-                if (request is null)
+                using (socket)
                 {
+                    var stream = new NetworkStream(socket);
+                    var reader = new StreamReader(stream);
+                    var writer = new StreamWriter(stream);
+
+                    var request = (await reader.ReadLineAsync())?.Split(' ');
+                    Console.WriteLine(request);
+                    if (request is null)
+                    {
+                        socket.Close();
+                        throw new ArgumentException("Request to server cannot be null");
+                    }
+                    if (String.Compare(request[0], "1") == 0)
+                    {
+                        await List(request[1], writer);
+                    }
+                    else if (String.Compare(request[0], "2") == 0)
+                    {
+                        await Get(request[1], writer);
+                    }
+
                     socket.Close();
-                    throw new ArgumentException("Request to server cannot be null");
                 }
-                if (String.Compare(request[0], "1") == 0)
-                {
-                    await List(request[1], writer);
-                }
-                else if (String.Compare(request[0], "2") == 0)
-                {
-                    await Get(request[1], writer);
-                }
-
-                socket.Close();
             }));
         }
         await Task.WhenAll(requests);

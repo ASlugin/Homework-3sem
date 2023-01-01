@@ -11,17 +11,19 @@ public class Tests
     private const int port = 8888;
     private Client client = new(IPAddress.Parse(ip), port);
     private Server server = new(IPAddress.Parse(ip), port);
+    private Task task = new(() => { });
 
     [OneTimeSetUp]
     public void Setup()
     {
-        server.Start();
+        task = server.Start();
     }
 
     [OneTimeTearDown]
     public void TearDownAfterAllTests()
     {
         server.Stop();
+        task.Wait();
     }
 
     [TearDown]
